@@ -38,22 +38,30 @@ private:
 	*/
 	unsigned char memory[memorySize];
 
-	// This looks awful
-	struct registers
+	// This still looks awful
+	struct Registers
 	{
-		struct
-		{
-			union
-			{
-				struct
-				{
-					unsigned char f;
-					unsigned char a;
-				};
-				unsigned short af;
-			};
-		};
+		unsigned char A; // Accumulator
+		unsigned char B;
+		unsigned char C;
+		unsigned char D;
+		unsigned char E;
+		unsigned char F; // Flags
+		unsigned char H;
+		unsigned char L;
 	};
+
+	Registers registers;
+
+	// 16-bit register handling until I think of a better way
+	unsigned short GetAF();
+	unsigned short GetBC();
+	unsigned short GetDE();
+	unsigned short GetHL();
+	void SetAF(unsigned short word);
+	void SetBC(unsigned short word);
+	void SetDE(unsigned short word);
+	void SetHL(unsigned short word);
 
 	// Program counter
 	unsigned short PC;
