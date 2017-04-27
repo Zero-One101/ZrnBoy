@@ -69,6 +69,66 @@ void Z80::SetHL(unsigned short word)
 	registers.L = word & 0x00FF;
 }
 
+bool Z80::GetZeroFlag()
+{
+	return ((registers.F >> 7) & 1);
+}
+
+bool Z80::GetAddSubFlag()
+{
+	return ((registers.F >> 6) & 1);
+}
+
+bool Z80::GetHalfCarryFlag()
+{
+	return ((registers.F >> 5) & 1);
+}
+
+bool Z80::GetCarryFlag()
+{
+	return ((registers.F >> 4) & 1);
+}
+
+void Z80::SetZeroFlag()
+{
+	registers.F |= 1 << 7;
+}
+
+void Z80::SetAddSubFlag()
+{
+	registers.F |= 1 << 6;
+}
+
+void Z80::SetHalfCarryFlag()
+{
+	registers.F |= 1 << 5;
+}
+
+void Z80::SetCarryFlag()
+{
+	registers.F |= 1 << 4;
+}
+
+void Z80::ClearZeroFlag()
+{
+	registers.F &= ~(1 << 7);
+}
+
+void Z80::ClearAddSubFlag()
+{
+	registers.F &= ~(1 << 6);
+}
+
+void Z80::ClearHalfCarryFlag()
+{
+	registers.F &= ~(1 << 5);
+}
+
+void Z80::ClearCarryFlag()
+{
+	registers.F &= ~(1 << 4);
+}
+
 Z80::~Z80()
 {
 }

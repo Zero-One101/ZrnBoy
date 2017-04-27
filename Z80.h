@@ -63,6 +63,20 @@ private:
 	void SetDE(unsigned short word);
 	void SetHL(unsigned short word);
 
+	// Flag handling
+	bool GetZeroFlag();
+	bool GetAddSubFlag();
+	bool GetHalfCarryFlag();
+	bool GetCarryFlag();
+	void SetZeroFlag();
+	void SetAddSubFlag();
+	void SetHalfCarryFlag();
+	void SetCarryFlag();
+	void ClearZeroFlag();
+	void ClearAddSubFlag();
+	void ClearHalfCarryFlag();
+	void ClearCarryFlag();
+
 	// Program counter
 	unsigned short PC;
 
