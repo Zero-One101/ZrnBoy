@@ -19,6 +19,47 @@ public:
 private:
 	void FetchOpcode();
 	void DecodeOpcode();
+	void UnknownOpcode();
+
+	// Function pointer table
+	void(Z80::*OpcodeTable[256])() =
+	{
+		&Z80::NoOp, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,			// 0x07
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x0F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x17
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x1F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x27
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x2F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x37
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x3F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x47
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x4F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x57
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x5F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x67
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x6F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x77
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x7F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x87
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x8F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x97
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0x9F
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xA7
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xAF
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xB7
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xBF
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::JumpImmediate, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xC7
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xCF
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xD7
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0XDF
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xE7
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xEF
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode,	// 0xF7
+		&Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode, &Z80::UnknownOpcode	// 0xFF
+	};
+
+	void NoOp();
+	void JumpImmediate();
 
 	static const int memorySize = 0xFFFF;
 	
@@ -82,5 +123,7 @@ private:
 
 	// Stack pointer
 	unsigned short SP;
+
+	unsigned char opcode;
 };
 

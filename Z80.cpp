@@ -1,14 +1,27 @@
 #include "Z80.h"
 
+#include <QMessageBox>
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <iterator>
+#include <string.h>
 
 Z80::Z80()
 {
 }
 
+void Z80::Init()
+{
+	PC = 0x0100;
+	SP = 0xFFFE;
+	opcode = 0;
+	memset(memory, 0, memorySize);
+	ClearZeroFlag();
+	ClearAddSubFlag();
+	ClearHalfCarryFlag();
+	ClearCarryFlag();
+}
 
 bool Z80::LoadGame(std::string const &gameName)
 {
@@ -17,12 +30,45 @@ bool Z80::LoadGame(std::string const &gameName)
 	std::istream_iterator<char> start(input), end;
 	std::vector<char> buffer(start, end);
 
-	for (auto& c : buffer)
-	{
-		printf(&c);
-	}
+	memcpy(memory, buffer.data(), 0x7FFF);
 
 	return true;
+}
+
+void Z80::AdvanceCycle()
+{
+	FetchOpcode();
+	DecodeOpcode();
+}
+
+void Z80::FetchOpcode()
+{
+	opcode = memory[PC];
+}
+
+void Z80::DecodeOpcode()
+{
+	(this->*OpcodeTable[opcode])();
+}
+
+void Z80::NoOp()
+{
+	PC++;
+	printf("0x%.2X: NOP\n", opcode);
+}
+
+void Z80::JumpImmediate()
+{
+	printf("0x%.2X: Jump Immediate\n", opcode);
+}
+
+void Z80::UnknownOpcode()
+{
+	char buffer[256];
+	sprintf_s(buffer, "Unknown opcode: 0x%.2X", opcode);
+	std::string message(buffer);
+	QMessageBox::critical(NULL, "Unknown opcode", message.c_str());
+	exit(EXIT_FAILURE);
 }
 
 unsigned short Z80::GetAF()

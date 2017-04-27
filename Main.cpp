@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <string.h>
+#include <Windows.h>
 
 #include "Z80.h"
 
@@ -19,7 +20,14 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	z80.Init();
 	z80.LoadGame(fileName.toStdString());
+
+	while (true)
+	{
+		z80.AdvanceCycle();
+		Sleep(10);
+	}
 
 	return 0;
 }
