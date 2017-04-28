@@ -39,6 +39,34 @@ void Z80::AdvanceCycle()
 {
 	FetchOpcode();
 	DecodeOpcode();
+
+	if (ShouldDisableInterrupts)
+	{
+		if (!DeferInterruptToggle)
+		{
+			InterruptsEnabled = false;
+			ShouldDisableInterrupts = false;
+			printf("Interrupts disabled\n");
+		}
+		else
+		{
+			DeferInterruptToggle = false;
+		}
+	}
+
+	if (ShouldEnableInterrupts)
+	{
+		if (!DeferInterruptToggle)
+		{
+			InterruptsEnabled = true;
+			ShouldEnableInterrupts = false;
+			printf("Interrupts enabled\n");
+		}
+		else
+		{
+			DeferInterruptToggle = false;
+		}
+	}
 }
 
 void Z80::FetchOpcode()
@@ -51,12 +79,17 @@ void Z80::DecodeOpcode()
 	(this->*OpcodeTable[opcode])();
 }
 
+/* Performs no operation */
 void Z80::NoOp()
 {
 	PC++;
 	printf("0x%.2X: NOP\n", opcode);
 }
 
+/* Decrements register B
+   If register B is 0, set zero flag
+   Set AddSub Flag
+   Set Half-carry if no borrow from bit 4*/
 void Z80::DecrementB()
 {
 	registers.B--;
@@ -66,29 +99,62 @@ void Z80::DecrementB()
 	}
 	SetAddSubFlag();
 	// TODO: Half-carry set if no borrow from bit 4. What does this mean?
+	// TODO: Half-carry if > 15!
 	PC++;
 	printf("0x%.2X: Decremented B (0x%.2X)\n", opcode, registers.B);
 }
 
+/* Stores register B into memory at the location specified by the next 8-bit value */
 void Z80::LoadBIntoImmediate()
 {
-	memory[memory[PC + 1]] = registers.B;
+	MemoryWriteByte(MemoryReadByte(PC + 1), registers.B);
 	printf("0x%.2X: Stored the value in register B (0x%.2X) into RAM at location 0x%.2X\n", opcode, registers.B, memory[PC + 1]);
 	PC += 2;
 }
 
+/* Decrements register C
+   If register C is 0, set zero flag
+   Set AddSub Flag
+   Set Half-carry if no borrow from bit 4*/
+void Z80::DecrementC()
+{
+	registers.C--;
+	if (registers.C == 0)
+	{
+		SetZeroFlag();
+	}
+	SetAddSubFlag();
+	// TODO: Half-carry set if no borrow from bit 4. What does this mean?
+	PC++;
+	printf("0x%.2X: Decremented C (0x%.2X)\n", opcode, registers.C);
+}
+
+/* Stores register C into memory at the location specified by the next 8-bit value */
 void Z80::LoadCIntoImmediate()
 {
-	memory[memory[PC + 1]] = registers.C;
+	MemoryWriteByte(MemoryReadByte(PC + 1), registers.C);
 	printf("0x%.2X: Stored the value in register C (0x%.2X) into RAM at location 0x%.2X\n", opcode, registers.C, memory[PC + 1]);
 	PC += 2;
 }
 
+/* If zero flag is reset, add the next 8-bit value to PC*/
 void Z80::JumpOffsetIfNZ()
 {
+	if (!GetZeroFlag())
+	{
+		PC += memory[PC + 1];
+		printf("0x%.2X: Zero Flag was reset, jumped to 0x%.2X\n", opcode, PC);
+		return;
+	}
 
+	PC += 2;
+	printf("0x%.2X: Zero Flag was set, did not jump\n", opcode);
 }
 
+/* Store the MSB of register B into the carry, then shift B left
+   If register B is 0, set zero flag
+   Clear AddSub Flag
+   Clear Half-carry Flag */
 void Z80::ShiftBLeftIntoCarry()
 {
 	registers.B >> 7 == 1 ? SetCarryFlag() : ClearCarryFlag();
@@ -103,13 +169,15 @@ void Z80::ShiftBLeftIntoCarry()
 	printf("0x%.2X: Shifted B left into carry (%i)\n", opcode, GetCarryFlag());
 }
 
-void Z80::LoadImmediateIntoHL()
+/* Loads the next 16-bit value into register HL */
+void Z80::LoadImmediate16IntoHL()
 {
-	SetHL(memory[PC + 2] << 8 | memory[PC + 1]);
+	SetHL(MemoryReadWord(PC + 1));
 	PC += 3;
 	printf("0x%.2X: Loaded 0x%.2X into register HL\n", opcode, GetHL());
 }
 
+/* Stores register A into register HL, then decrements HL */
 void Z80::LoadAIntoHLDecrementHL()
 {
 	SetHL(registers.A);
@@ -118,6 +186,24 @@ void Z80::LoadAIntoHLDecrementHL()
 	printf("0x%.2X: Loaded A (0x%.2X) into HL and decremented\n", opcode, registers.A);
 }
 
+/* Loads the next 8-bit value into HL */
+void Z80::LoadImmediateIntoHL()
+{
+	unsigned char data = MemoryReadByte(PC + 1);
+	SetHL(data);
+	printf("0x%.2X: Set HL to 0x%.2X\n", opcode, data);
+	PC += 2;
+}
+
+/* Loads the next 8-bit value into register A */
+void Z80::LoadImmediateIntoA()
+{
+	registers.A = MemoryReadByte(PC + 1);
+	PC += 2;
+	printf("0x%.2X: Loaded 0x%.2X into A\n", opcode, registers.A);
+}
+
+/* Xors A with A. Sets zero flag, clears all others */
 void Z80::XorWithA()
 {
 	registers.A ^= registers.A;
@@ -129,16 +215,83 @@ void Z80::XorWithA()
 	printf("0x%.2X: XOR register A with register A. Result is 0x%.2X\n", opcode, registers.A);
 }
 
+/* Jumps to the offset specified by the next 16-bit value */
 void Z80::JumpImmediate()
 {
-	unsigned short dest = memory[PC + 2] << 8 | memory[PC + 1];
+	unsigned short dest = MemoryReadWord(PC + 1);
 	PC = dest;
 	printf("0x%.2X: Jump Immediate to 0x%.2X\n", opcode, dest);
 }
 
+/* Encountered opcode CB, so use the CB function pointer table */
 void Z80::CBLookup()
 {
+	PC++;
+	FetchOpcode();
+	(this->*CBTable[opcode])();
+}
 
+/* Stores register A to 0xFF00 plus the next 8-bit value */
+void Z80::StoreAToFFImmediate()
+{
+	unsigned short dest = 0xFF00 + MemoryReadByte(PC + 1);
+	MemoryWriteByte(dest, registers.A);
+	PC += 2;
+	printf("0x%.2X: A (0x%.2X) stored at 0x%.2X\n", opcode, registers.A, dest);
+}
+
+/* Stores register A to memory at the next 16-bit value */
+void Z80::StoreAToImmediate16()
+{
+	unsigned short dest = MemoryReadWord(PC + 1);
+	MemoryWriteByte(dest, registers.A);
+	PC += 3;
+	printf("0x%.2X: Stored A (0x%.2X) to 0x%.4X\n", opcode, registers.A, dest);
+}
+
+/* Loads the value at 0xFF00 plus the next 8-bit value into register A */
+void Z80::LoadFFImmediateIntoA()
+{
+	unsigned short loc = 0xFF00 + MemoryReadByte(PC + 1);
+	registers.A = MemoryReadByte(loc);
+	PC += 2;
+	printf("0x%.2X: Loaded value at location 0x%.2X (0x%.2X) into register A\n", opcode, loc, registers.A);
+}
+
+/* Disables interrupts after the execution of the NEXT instruction */
+void Z80::DisableInterrupts()
+{
+	ShouldDisableInterrupts = true;
+	DeferInterruptToggle = true;
+	PC++;
+	printf("0x%.2X: Interrupts disabled after next instruction\n", opcode);
+}
+
+/* Compares the value in register A with the next 8-bit value
+   Zero flag is set if A = n
+   AddSub Flag is set
+   Half-carry flag is set if no borrow from bit 4
+   Carry set if A < n */
+void Z80::CompareAWithImmediate()
+{
+	SetAddSubFlag();
+	// TODO: Half-carry borrow thing
+	unsigned char n = MemoryReadByte(PC + 1);
+	if (registers.A == n)
+	{
+		SetZeroFlag();
+		printf("0x%.2X: Register A is equal to 0x%.2X\n", opcode, n);
+	}
+	else
+	{
+		if (registers.A < n)
+		{
+			SetCarryFlag();
+		}
+		printf("0x%.2X: Register A is not equal to 0x%.2X\n", opcode, n);
+	}
+
+	PC += 2;
 }
 
 void Z80::UnknownOp()
@@ -261,6 +414,26 @@ void Z80::ClearHalfCarryFlag()
 void Z80::ClearCarryFlag()
 {
 	registers.F &= ~(1 << 4);
+}
+
+unsigned char Z80::MemoryReadByte(unsigned short loc)
+{
+	return memory[loc];
+}
+
+void Z80::MemoryWriteByte(unsigned short dest, unsigned char data)
+{
+	memory[dest] = data;
+}
+
+unsigned short Z80::MemoryReadWord(unsigned short loc)
+{
+	return memory[loc + 1] << 8 | memory[loc];
+}
+
+void Z80::MemoryWriteWord(unsigned short dest, unsigned short data)
+{
+	memory[dest] = data;
 }
 
 Z80::~Z80()

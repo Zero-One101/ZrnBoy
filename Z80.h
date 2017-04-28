@@ -26,13 +26,13 @@ private:
 	void(Z80::*OpcodeTable[256])() =
 	{
 		&Z80::NoOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DecrementB, &Z80::LoadBIntoImmediate, &Z80::UnknownOp,				// 0x07
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadCIntoImmediate, &Z80::UnknownOp,			// 0x0F
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DecrementC, &Z80::LoadCIntoImmediate, &Z80::UnknownOp,			// 0x0F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x1F
-		&Z80::JumpOffsetIfNZ, &Z80::LoadImmediateIntoHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,		// 0x27
+		&Z80::JumpOffsetIfNZ, &Z80::LoadImmediate16IntoHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,		// 0x27
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x2F
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadAIntoHLDecrementHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,		// 0x37
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x3F
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadAIntoHLDecrementHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoHL, &Z80::UnknownOp,		// 0x37
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoA, &Z80::UnknownOp,			// 0x3F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x47
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x4F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x57
@@ -53,12 +53,13 @@ private:
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::CBLookup, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xCF
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xD7
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0XDF
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xE7
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xEF
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xF7
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp						// 0xFF
+		&Z80::StoreAToFFImmediate, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,			// 0xE7
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::StoreAToImmediate16, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,			// 0xEF
+		&Z80::LoadFFImmediateIntoA, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DisableInterrupts, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,	// 0xF7
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::CompareAWithImmediate, &Z80::UnknownOp			// 0xFF
 	};
 
+	// Function pointer table for CB prefix
 	void(Z80::*CBTable[256])() =
 	{
 		&Z80::UnknownCB, &Z80::UnknownCB, &Z80::UnknownCB, &Z80::UnknownCB, &Z80::UnknownCB, &Z80::UnknownCB, &Z80::UnknownCB, &Z80::UnknownCB,						// 0x07
@@ -98,13 +99,21 @@ private:
 	void NoOp();
 	void DecrementB();
 	void LoadBIntoImmediate();
+	void DecrementC();
 	void LoadCIntoImmediate();
 	void JumpOffsetIfNZ();
-	void LoadImmediateIntoHL();
+	void LoadImmediate16IntoHL();
 	void LoadAIntoHLDecrementHL();
+	void LoadImmediateIntoHL();
+	void LoadImmediateIntoA();
 	void XorWithA();
 	void JumpImmediate();
 	void CBLookup();
+	void StoreAToFFImmediate();
+	void StoreAToImmediate16();
+	void LoadFFImmediateIntoA();
+	void DisableInterrupts();
+	void CompareAWithImmediate();
 
 	void ShiftBLeftIntoCarry();
 
@@ -165,6 +174,12 @@ private:
 	void ClearHalfCarryFlag();
 	void ClearCarryFlag();
 
+	// Memory Read/Write
+	unsigned char MemoryReadByte(unsigned short loc);
+	void MemoryWriteByte(unsigned short dest, unsigned char data);
+	unsigned short MemoryReadWord(unsigned short loc);
+	void MemoryWriteWord(unsigned short dest, unsigned short data);
+
 	// Program counter
 	unsigned short PC;
 
@@ -172,5 +187,10 @@ private:
 	unsigned short SP;
 
 	unsigned char opcode;
+
+	bool InterruptsEnabled = true;
+	bool ShouldDisableInterrupts = false;
+	bool ShouldEnableInterrupts = false;
+	bool DeferInterruptToggle = false;
 };
 
