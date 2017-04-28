@@ -57,12 +57,91 @@ void Z80::NoOp()
 	printf("0x%.2X: NOP\n", opcode);
 }
 
-void Z80::JumpImmediate()
+void Z80::DecrementB()
 {
-	printf("0x%.2X: Jump Immediate\n", opcode);
+	registers.B--;
+	if (registers.B == 0)
+	{
+		SetZeroFlag();
+	}
+	SetAddSubFlag();
+	// TODO: Half-carry set if no borrow from bit 4. What does this mean?
+	PC++;
+	printf("0x%.2X: Decremented B (0x%.2X)\n", opcode, registers.B);
 }
 
-void Z80::UnknownOpcode()
+void Z80::LoadBIntoImmediate()
+{
+	memory[memory[PC + 1]] = registers.B;
+	printf("0x%.2X: Stored the value in register B (0x%.2X) into RAM at location 0x%.2X\n", opcode, registers.B, memory[PC + 1]);
+	PC += 2;
+}
+
+void Z80::LoadCIntoImmediate()
+{
+	memory[memory[PC + 1]] = registers.C;
+	printf("0x%.2X: Stored the value in register C (0x%.2X) into RAM at location 0x%.2X\n", opcode, registers.C, memory[PC + 1]);
+	PC += 2;
+}
+
+void Z80::JumpOffsetIfNZ()
+{
+
+}
+
+void Z80::ShiftBLeftIntoCarry()
+{
+	registers.B >> 7 == 1 ? SetCarryFlag() : ClearCarryFlag();
+	registers.B <<= 1;
+	if (registers.B == 0)
+	{
+		SetZeroFlag();
+	}
+	ClearAddSubFlag();
+	ClearHalfCarryFlag();
+	PC += 2;
+	printf("0x%.2X: Shifted B left into carry (%i)\n", opcode, GetCarryFlag());
+}
+
+void Z80::LoadImmediateIntoHL()
+{
+	SetHL(memory[PC + 2] << 8 | memory[PC + 1]);
+	PC += 3;
+	printf("0x%.2X: Loaded 0x%.2X into register HL\n", opcode, GetHL());
+}
+
+void Z80::LoadAIntoHLDecrementHL()
+{
+	SetHL(registers.A);
+	SetHL(GetHL() - 1);
+	PC++;
+	printf("0x%.2X: Loaded A (0x%.2X) into HL and decremented\n", opcode, registers.A);
+}
+
+void Z80::XorWithA()
+{
+	registers.A ^= registers.A;
+	SetZeroFlag();
+	ClearAddSubFlag();
+	ClearHalfCarryFlag();
+	ClearCarryFlag();
+	PC++;
+	printf("0x%.2X: XOR register A with register A. Result is 0x%.2X\n", opcode, registers.A);
+}
+
+void Z80::JumpImmediate()
+{
+	unsigned short dest = memory[PC + 2] << 8 | memory[PC + 1];
+	PC = dest;
+	printf("0x%.2X: Jump Immediate to 0x%.2X\n", opcode, dest);
+}
+
+void Z80::CBLookup()
+{
+
+}
+
+void Z80::UnknownOp()
 {
 	char buffer[256];
 	sprintf_s(buffer, "Unknown opcode: 0x%.2X", opcode);
@@ -71,24 +150,33 @@ void Z80::UnknownOpcode()
 	exit(EXIT_FAILURE);
 }
 
+void Z80::UnknownCB()
+{
+	char buffer[256];
+	sprintf_s(buffer, "Unknown CB opcode: CB 0x%.2X", opcode);
+	std::string message(buffer);
+	QMessageBox::critical(NULL, "Unknown CB opcode", message.c_str());
+	exit(EXIT_FAILURE);
+}
+
 unsigned short Z80::GetAF()
 {
-	return (unsigned short(registers.A) << 8 & registers.F);
+	return (unsigned short(registers.A) << 8 | registers.F);
 }
 
 unsigned short Z80::GetBC()
 {
-	return (unsigned short(registers.B) << 8 & registers.C);
+	return (unsigned short(registers.B) << 8 | registers.C);
 }
 
 unsigned short Z80::GetDE()
 {
-	return (unsigned short(registers.D) << 8 & registers.E);
+	return (unsigned short(registers.D) << 8 | registers.E);
 }
 
 unsigned short Z80::GetHL()
 {
-	return (unsigned short(registers.H) << 8 & registers.L);
+	return (unsigned short(registers.H) << 8 | registers.L);
 }
 
 void Z80::SetAF(unsigned short word)
