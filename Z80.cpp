@@ -140,8 +140,7 @@ void Z80::DecB()
 	registers.B--;
 	registers.B == 0 ? SetCarryFlag() : ClearCarryFlag();
 	SetAddSubFlag();
-	// TODO: Half-carry set if no borrow from bit 4. What does this mean?
-	// TODO: Half-carry if > 15!
+	registers.B > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented B (0x%.2X)\n", opcode, registers.B);
 }
@@ -179,7 +178,7 @@ void Z80::IncC()
 	registers.C++;
 	registers.C == 0 ? SetCarryFlag() : ClearCarryFlag();
 	ClearAddSubFlag();
-	// TODO: Half-carry
+	registers.C > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Incremented C (0x%.2X)\n", opcode, registers.C);
 }
@@ -193,7 +192,7 @@ void Z80::DecC()
 	registers.C--;
 	registers.C == 0 ? SetCarryFlag() : ClearCarryFlag();
 	SetAddSubFlag();
-	// TODO: Half-carry set if no borrow from bit 4. What does this mean?
+	registers.C > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented C (0x%.2X)\n", opcode, registers.C);
 }
@@ -240,7 +239,7 @@ void Z80::DecD()
 	registers.D--;
 	registers.D == 0 ? SetZeroFlag() : ClearZeroFlag();
 	SetAddSubFlag();
-	// TODO: Half-carry
+	registers.D > 0 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented D (0x%.2X)\n", opcode, registers.D);
 }
@@ -262,9 +261,10 @@ void Z80::AddDEToHL()
 	int result = GetHL() + GetDE();
 	SetHL(GetHL() + GetDE());
 	ClearAddSubFlag();
+	// TODO: Verify this is right. Not sure if half-carry and carry can both be set
+	result > 1023 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	result > 0xFFFF ? SetCarryFlag() : ClearCarryFlag();
 	PC++;
-	// TODO: Half-carry
 	printf("0x%.2X: Set HL to HL + DE (0x%.4X)\n", opcode, GetHL());
 }
 
@@ -285,7 +285,7 @@ void Z80::IncE()
 	registers.E++;
 	registers.E == 0 ? SetZeroFlag() : ClearZeroFlag();
 	ClearAddSubFlag();
-	// TODO: Half-carry
+	registers.E > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Incremented E (0x%.2X)\n", opcode, registers.E);
 }
@@ -299,7 +299,7 @@ void Z80::DecE()
 	registers.E--;
 	registers.E == 0 ? SetZeroFlag() : ClearZeroFlag();
 	SetAddSubFlag();
-	// TODO: Half-carry
+	registers.E > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented E (0x%.2X)\n", opcode, registers.E);
 }
@@ -360,7 +360,7 @@ void Z80::AddHLToHL()
 	SetHL(GetHL() + GetHL());
 	result > 0xFFFF ? SetCarryFlag() : ClearCarryFlag();
 	ClearAddSubFlag();
-	// TODO: Half-carry
+	result > 1023 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Added HL to itself (0x%.4X)\n", opcode, GetHL());
 }

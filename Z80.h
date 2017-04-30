@@ -212,7 +212,7 @@ private:
 
 	unsigned char opcode;
 
-	bool interruptsEnabled = true;
+	bool interruptsEnabled = false;
 	bool shouldDisableInterrupts = false;
 	bool shouldEnableInterrupts = false;
 	bool deferInterruptToggle = false;
@@ -220,11 +220,11 @@ private:
 	bool stopped = false;
 
 	// Interrupt jumps
-	const unsigned short VBlankAddr = 0x0040; // Priority 1
+	const unsigned short VBlankAddr = 0x0040; // Priority 1 -- HIGHEST
 	const unsigned short LcdcAddr = 0x0048; // Priority 2
 	const unsigned short TimerAddr = 0x0050; // Priority 3
 	const unsigned short SerialAddr = 0x0058; // Priority 4
-	const unsigned short P10 = 0x0060; // Priority 5
+	const unsigned short P10 = 0x0060; // Priority 5 -- LOWEST
 
 	// I/O Registers
 	const unsigned short P1 = 0xFF00; // Joypad info
