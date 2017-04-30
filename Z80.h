@@ -218,5 +218,57 @@ private:
 	bool deferInterruptToggle = false;
 
 	bool stopped = false;
+
+	// Interrupt jumps
+	const unsigned short VBlankAddr = 0x0040; // Priority 1
+	const unsigned short LcdcAddr = 0x0048; // Priority 2
+	const unsigned short TimerAddr = 0x0050; // Priority 3
+	const unsigned short SerialAddr = 0x0058; // Priority 4
+	const unsigned short P10 = 0x0060; // Priority 5
+
+	// I/O Registers
+	const unsigned short P1 = 0xFF00; // Joypad info
+	const unsigned short SB = 0xFF01; // Serial transfer data
+	const unsigned short SC = 0xFF02; // Serial I/O control
+	const unsigned short Div = 0xFF04; // Divider
+	const unsigned short Tima = 0xFF05; // Timer counter
+	const unsigned short Tma = 0xFF06; // Timer modulo
+	const unsigned short Tac = 0xFF07; // Timer control
+	const unsigned short IF = 0xFF0F; // Interrupt flag
+	const unsigned short NR10 = 0xFF10; // Sound Mode 1 sweep register
+	const unsigned short NR11 = 0xFF11; // Sound mode 1 wave pattern duty register
+	const unsigned short NR12 = 0xFF12; // Sound mode 1 envelope register
+	const unsigned short NR13 = 0xFF13; // Sound mode 1 freq. lo register
+	const unsigned short NR14 = 0xFF14; // Sound mode 1 freq. hi register
+	const unsigned short NR21 = 0xFF16; // Sound mode 2 wave pattern duty register
+	const unsigned short NR22 = 0xFF17; // Sound mode 2 envelope register
+	const unsigned short NR23 = 0xFF18; // Sound mode 2 freq. lo register
+	const unsigned short NR24 = 0xFF19; // Sound mode 2 freq. hi register
+	const unsigned short NR30 = 0xFF1A; // Sound mode 3 on/off register
+	const unsigned short NR31 = 0xFF1B; // Sound mode 3 sound length register
+	const unsigned short NR32 = 0xFF1C; // Sound mode 3 output level register
+	const unsigned short NR33 = 0xFF1D; // Sound mode 3 freq. lo register
+	const unsigned short NR34 = 0xFF1E; // Sound mode 3 freq. hi register
+	const unsigned short NR41 = 0xFF20; // Sound mode 4 sound length register
+	const unsigned short NR42 = 0xFF21; // Sound mode 4 envelope register
+	const unsigned short NR43 = 0xFF22; // Sound mode 4 polynomial counter register
+	const unsigned short NR44 = 0xFF23; // Sound mode 4 counter/consecutive register
+	const unsigned short NR50 = 0xFF24; // Channel control
+	const unsigned short NR51 = 0xFF25; // Selection of sound output terminal
+	const unsigned short NR52 = 0xFF26; // Sound on/off
+	const unsigned short WaveRAM = 0xFF30; // Wave pattern RAM (samples)
+	const unsigned short Lcdc = 0xFF40; // LCD Control
+	const unsigned short Stat = 0xFF41; // LCD status
+	const unsigned short SCY = 0xFF42; // Scroll Y
+	const unsigned short SCX = 0xFF43; // Scroll X
+	const unsigned short LY = 0xFF44; // LCDC Y-Coordinate
+	const unsigned short LYC = 0xFF45; // LY Compare
+	const unsigned short DMA = 0xFF46; // DMA transfer and start address
+	const unsigned short BGP = 0xFF47; // BG & window palette data
+	const unsigned short OBP0 = 0xFF48; // Object palette 0 data
+	const unsigned short OBP1 = 0xFF49; // Object palette 1 data
+	const unsigned short WY = 0xFF4A; // Window Y position
+	const unsigned short WX = 0xFF4B; // Window X position
+	const unsigned short IE = 0xFFFF; // Interrupt enable
 };
 

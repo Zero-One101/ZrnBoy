@@ -21,6 +21,32 @@ void Z80::Init()
 	ClearAddSubFlag();
 	ClearHalfCarryFlag();
 	ClearCarryFlag();
+
+	SetAF(0x01B0);
+	SetBC(0x0013);
+	SetDE(0x00D8);
+	SetHL(0x014D);
+
+	// Set stack
+	MemoryWriteByte(0xFF10, 0x80);
+	MemoryWriteByte(0xFF11, 0xBF);
+	MemoryWriteByte(0xFF12, 0xF3);
+	MemoryWriteByte(0xFF14, 0xBF);
+	MemoryWriteByte(0xFF16, 0x3F);
+	MemoryWriteByte(0xFF19, 0xBF);
+	MemoryWriteByte(0xFF1A, 0x7F);
+	MemoryWriteByte(0xFF1B, 0xFF);
+	MemoryWriteByte(0xFF1C, 0x9F);
+	MemoryWriteByte(0xFF1E, 0xBF);
+	MemoryWriteByte(0xFF20, 0xFF);
+	MemoryWriteByte(0xFF23, 0xBF);
+	MemoryWriteByte(0xFF24, 0x77);
+	MemoryWriteByte(0xFF25, 0xF3);
+	MemoryWriteByte(0xFF26, 0xF1);
+	MemoryWriteByte(0xFF40, 0x91);
+	MemoryWriteByte(0xFF47, 0xFC);
+	MemoryWriteByte(0xFF48, 0xFF);
+	MemoryWriteByte(0xFF49, 0xFF);
 }
 
 bool Z80::LoadGame(std::string const &gameName)
@@ -666,6 +692,20 @@ unsigned char Z80::MemoryReadByte(unsigned short loc)
 
 void Z80::MemoryWriteByte(unsigned short dest, unsigned char data)
 {
+	if ((dest >= 0xC000 && dest <= 0xDDFF) || (dest >= 0xE000 && dest <= 0xFDFF))
+	{
+		// Mirroring
+		if (dest >= 0xC000 && dest <= 0xDDFF)
+		{
+			memory[dest] = data;
+			memory[dest + 0x2000] = data;
+			return;
+		}
+
+		memory[dest] = data;
+		memory[dest - 0x2000] = data;
+		return;
+	}
 	memory[dest] = data;
 }
 
@@ -676,6 +716,20 @@ unsigned short Z80::MemoryReadWord(unsigned short loc)
 
 void Z80::MemoryWriteWord(unsigned short dest, unsigned short data)
 {
+	if ((dest >= 0xC000 && dest <= 0xDDFE) || (dest >= 0xE000 && dest <= 0xFDFE))
+	{
+		// Mirroring
+		if (dest >= 0xC000 && dest <= 0xDDFE)
+		{
+			memory[dest] = data;
+			memory[dest + 0x2000] = data;
+			return;
+		}
+
+		memory[dest] = data;
+		memory[dest - 0x2000] = data;
+		return;
+	}
 	memory[dest] = data;
 }
 
