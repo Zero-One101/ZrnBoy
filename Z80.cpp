@@ -391,9 +391,9 @@ void Z80::ComplementA()
 /* Pushes the next 16-bit value onto the stack */
 void Z80::PushImmediate16()
 {
+	SP -= 2;
 	unsigned short data = MemoryReadWord(PC + 1);
 	MemoryWriteWord(SP, data);
-	SP -= 2;
 	printf("0x%.2X: Pushed 0x%.2X onto stack\n", opcode, data);
 	PC += 3;
 }
@@ -485,8 +485,8 @@ void Z80::CBLookup()
 /* Pushes address of next instruction to the stack, then jumps to the next 16-bit value */
 void Z80::CallImmediate16()
 {
-	MemoryWriteWord(SP, PC + 3);
 	SP -= 2;
+	MemoryWriteWord(SP, PC + 3);
 	PC = MemoryReadWord(PC + 1);
 	printf("0x%.2X: Called method at 0x%.4X\n", opcode, PC);
 }
