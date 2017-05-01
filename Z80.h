@@ -26,7 +26,7 @@ private:
 	void(Z80::*OpcodeTable[256])() =
 	{
 		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::IncBC, &Z80::UnknownOp, &Z80::DecB, &Z80::LoadBIntoImmediate, &Z80::UnknownOp,				// 0x07
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::DecBC, &Z80::IncC, &Z80::DecC, &Z80::LoadCIntoImmediate, &Z80::UnknownOp,			// 0x0F
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::DecBC, &Z80::IncC, &Z80::DecC, &Z80::LoadImmediateIntoC, &Z80::UnknownOp,			// 0x0F
 		&Z80::Stop, &Z80::LoadImmediate16IntoDE, &Z80::LoadAIntoDE, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DecD, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
 		&Z80::JumpSignedImmediate, &Z80::AddDEToHL, &Z80::UnknownOp, &Z80::DecDE, &Z80::IncE, &Z80::DecE, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x1F
 		&Z80::JumpOffsetIfNZ, &Z80::LoadImmediate16IntoHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoH, &Z80::UnknownOp,		// 0x27
@@ -105,7 +105,7 @@ private:
 	void DecBC();
 	void IncC();
 	void DecC();
-	void LoadCIntoImmediate();
+	void LoadImmediateIntoC();
 	void Stop();
 	void LoadImmediate16IntoDE();
 	void LoadAIntoDE();
@@ -270,5 +270,7 @@ private:
 	const unsigned short WY = 0xFF4A; // Window Y position
 	const unsigned short WX = 0xFF4B; // Window X position
 	const unsigned short IE = 0xFFFF; // Interrupt enable
+
+	int cycles; // Timer counting down in machine cycles
 };
 
