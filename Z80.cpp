@@ -158,7 +158,7 @@ void Z80::IncBC()
 void Z80::DecB()
 {
 	registers.B--;
-	registers.B == 0 ? SetCarryFlag() : ClearCarryFlag();
+	registers.B == 0 ? SetZeroFlag() : ClearZeroFlag();
 	SetAddSubFlag();
 	registers.B > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
@@ -166,11 +166,12 @@ void Z80::DecB()
 	cycles -= 4;
 }
 
-/* Stores register B into memory at the location specified by the next 8-bit value */
-void Z80::LoadBIntoImmediate()
+/* Stores the next 8-bit value into B */
+void Z80::LoadImmediateIntoB()
 {
-	MemoryWriteByte(MemoryReadByte(PC + 1), registers.B);
-	printf("0x%.2X: Stored the value in register B (0x%.2X) into RAM at location 0x%.2X\n", opcode, registers.B, memory[PC + 1]);
+	unsigned char data = MemoryReadByte(PC + 1);
+	registers.B = data;
+	printf("0x%.2X: Loaded 0x%.2X into B\n", opcode, data);
 	PC += 2;
 	cycles -= 8;
 }
@@ -348,7 +349,8 @@ void Z80::JumpOffsetIfNZ()
 {
 	if (!GetZeroFlag())
 	{
-		PC += memory[PC + 1];
+		signed char dest = MemoryReadByte(PC + 1) + 1; // +1 here because I don't advance PC to get the next byte
+		PC += dest;
 		printf("0x%.2X: Zero Flag was reset, jumped to 0x%.2X\n", opcode, PC);
 		cycles -= 12;
 		return;

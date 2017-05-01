@@ -25,7 +25,7 @@ private:
 	// Function pointer table
 	void(Z80::*OpcodeTable[256])() =
 	{
-		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::IncBC, &Z80::UnknownOp, &Z80::DecB, &Z80::LoadBIntoImmediate, &Z80::UnknownOp,				// 0x07
+		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::IncBC, &Z80::UnknownOp, &Z80::DecB, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::DecBC, &Z80::IncC, &Z80::DecC, &Z80::LoadImmediateIntoC, &Z80::UnknownOp,			// 0x0F
 		&Z80::Stop, &Z80::LoadImmediate16IntoDE, &Z80::LoadAIntoDE, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DecD, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
 		&Z80::JumpSignedImmediate, &Z80::AddDEToHL, &Z80::UnknownOp, &Z80::DecDE, &Z80::IncE, &Z80::DecE, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x1F
@@ -100,7 +100,7 @@ private:
 	void LoadImmediate16IntoBC();
 	void IncBC();
 	void DecB();
-	void LoadBIntoImmediate();
+	void LoadImmediateIntoB();
 	void LoadBCIndirectIntoA();
 	void DecBC();
 	void IncC();
