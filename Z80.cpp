@@ -175,7 +175,7 @@ void Z80::DecB()
 	registers.B--;
 	registers.B == 0 ? SetZeroFlag() : ClearZeroFlag();
 	SetAddSubFlag();
-	registers.B > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	registers.B < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented B (0x%.2X)\n", opcode, registers.B);
 	cycles -= 4;
@@ -233,7 +233,7 @@ void Z80::DecC()
 	registers.C--;
 	registers.C == 0 ? SetCarryFlag() : ClearCarryFlag();
 	SetAddSubFlag();
-	registers.C > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	registers.C < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented C (0x%.2X)\n", opcode, registers.C);
 	cycles -= 4;
@@ -279,6 +279,21 @@ void Z80::LoadAIntoDE()
 	// LD (DE), A
 }
 
+/* Increments D
+   Zero flag set if D is 0
+   AddSub flag reset
+   Half-carry if carry from bit 3 */
+void Z80::IncD()
+{
+	registers.D++;
+	ClearAddSubFlag();
+	registers.D == 0 ? SetZeroFlag() : ClearZeroFlag();
+	registers.D > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	cycles -= 4;
+	PC++;
+	printf("0x%.2X: Incremented D (0x%.2X)\n", opcode, registers.D);
+}
+
 /* Decrements D
    Zero flag set if D is 0
    AddSub flag set
@@ -288,7 +303,7 @@ void Z80::DecD()
 	registers.D--;
 	registers.D == 0 ? SetZeroFlag() : ClearZeroFlag();
 	SetAddSubFlag();
-	registers.D > 0 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	registers.D < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented D (0x%.2X)\n", opcode, registers.D);
 	cycles -= 4;
@@ -338,7 +353,7 @@ void Z80::IncE()
 	registers.E++;
 	registers.E == 0 ? SetZeroFlag() : ClearZeroFlag();
 	ClearAddSubFlag();
-	registers.E > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	registers.E < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Incremented E (0x%.2X)\n", opcode, registers.E);
 	cycles -= 4;
@@ -353,10 +368,26 @@ void Z80::DecE()
 	registers.E--;
 	registers.E == 0 ? SetZeroFlag() : ClearZeroFlag();
 	SetAddSubFlag();
-	registers.E > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	registers.E < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
 	PC++;
 	printf("0x%.2X: Decremented E (0x%.2X)\n", opcode, registers.E);
 	cycles -= 4;
+}
+
+/* Rotates A to the right. Carry becomes bit 7, bit 0 stored in carry
+	Z set if result is 0
+	AddSub reset
+	Half-carry reset
+	Carry contains old bit 0 */
+void Z80::RotateRightA()
+{
+	unsigned char carry = GetCarryFlag() << 7;
+	(registers.A & 1) == 1 ? SetCarryFlag() : ClearCarryFlag();
+	registers.A >>= 1;
+	registers.A |= carry;
+	cycles -= 4;
+	PC++;
+	printf("0x%.2X: Rotated A right through carry (0x%.2X)\n", opcode, registers.A);
 }
 
 /* If zero flag is reset, add the next 8-bit value to PC*/
@@ -408,7 +439,7 @@ void Z80::JumpOffsetIfZ()
 	}
 
 	cycles -= 8;
-	PC++;
+	PC += 2;
 	printf("0x%.2X: Zero flag was not set, did not jump\n", opcode);
 }
 
@@ -438,6 +469,16 @@ void Z80::LoadHLIndirectIntoAIncHL()
 	PC++;
 	printf("0x%.2X: Loaded HL indirect value 0x%.2X into A\n", opcode, data);
 	cycles -= 8;
+}
+
+/* Loads the next 8-bit value into L */
+void Z80::LoadImmediateIntoL()
+{
+	unsigned char data = MemoryReadByte(PC + 1);
+	registers.L = data;
+	cycles -= 8;
+	PC += 2;
+	printf("0x%.2X: Loaded 0x%.2X into L\n", opcode, data);
 }
 
 /* A looks wonderful today! Flip all the bits 
@@ -483,6 +524,22 @@ void Z80::LoadImmediateIntoHL()
 	PC += 2;
 	cycles -= 12;
 	// TODO: Not sure this is right. LD (HL), d8
+}
+
+/* If C is set, add the next signed 8-bit value to PC */
+void Z80::JumpOffsetIfC()
+{
+	if (GetCarryFlag())
+	{
+		cycles -= 12;
+		signed char offset = MemoryReadByte(PC + 1);
+		PC += offset;
+		printf("0x%.2X: Carry flag was set, jumped to 0x%.4X\n", opcode, PC);
+	}
+
+	cycles -= 8;
+	PC += 2;
+	printf("0x%.2X: Carry flag not set, did not jump\n", opcode);
 }
 
 /* Loads the next 8-bit value into register A */
@@ -537,6 +594,23 @@ void Z80::AddCToA()
 	cycles -= 4;
 }
 
+/* Subtract the next 8-bit immediate value, plus carry, from A
+   Z set if result is 0
+   N set
+   H set if no borrow from bit 4
+   C set if no borrow */
+void Z80::SubtractNCarryFromA()
+{
+	unsigned char n = MemoryReadByte(PC + 1) + GetCarryFlag();
+	registers.A -= n;
+	registers.A < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	// registers.A < 128 ? 
+	// TODO: Figure carries out correctly
+	PC++;
+	cycles -= 4;
+	printf("0x%.2X: Subtracted 0x%.2X plus carry from A (0x%.2X)\n", opcode, n, registers.A);
+}
+
 /* Ands A with A
    Zero flag set if A is 0
    AddSub flag cleared
@@ -581,6 +655,22 @@ void Z80::OrCWithA()
 	printf("0x%.2X: Or'd C with A (0x%.2X)\n", opcode, registers.A);
 	cycles -= 4;
 }
+
+/* Returns from the subroutine if the zero flag is clear */
+void Z80::RetIfNZ()
+{
+	if (!GetZeroFlag())
+	{
+		cycles -= 20;
+		PC = StackPop();
+		printf("0x%.2X: Zero flag not set, returned from subroutine\n", opcode);
+		return;
+	}
+	cycles -= 8;
+	PC++;
+	printf("0x%.2X: Zero flag set, did not return from subroutine\n", opcode);
+}
+
 
 /* Jumps to the offset specified by the next 16-bit value */
 void Z80::JumpImmediate()
@@ -633,6 +723,22 @@ void Z80::PushDEToStack()
 	cycles -= 16;
 	PC++;
 	printf("0x%.2X: Pushed DE to stack\n", opcode);
+}
+
+/* Returns from the subroutine if C is set */
+void Z80::ReturnIfC()
+{
+	if (GetCarryFlag())
+	{
+		cycles -= 20;
+		PC = StackPop();
+		printf("0x%.2X: Carry was set, returned from subroutine\n", opcode);
+		return;
+	}
+
+	cycles -= 8;
+	PC++;
+	printf("0x%.2X: Carry was not set, did not return\n", opcode);
 }
 
 /* Stores register A to 0xFF00 plus the next 8-bit value */
@@ -729,6 +835,15 @@ void Z80::CompareAWithImmediate()
 	}
 	cycles -= 8;
 	PC += 2;
+}
+
+/* Push PC to stack, then jump to 0x0038 */
+void Z80::Restart38()
+{
+	StackPush(PC);
+	PC = 0x0038;
+	cycles -= 32;
+	printf("0x%.2X: Restart 0x38\n", opcode);
 }
 
 void Z80::UnknownOp()
