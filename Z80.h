@@ -25,12 +25,12 @@ private:
 	// Function pointer table
 	void(Z80::*OpcodeTable[256])() =
 	{
-		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::IncBC, &Z80::UnknownOp, &Z80::DecB, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
+		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::IncBC, &Z80::IncB, &Z80::DecB, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::DecBC, &Z80::IncC, &Z80::DecC, &Z80::LoadImmediateIntoC, &Z80::UnknownOp,			// 0x0F
 		&Z80::Stop, &Z80::LoadImmediate16IntoDE, &Z80::LoadAIntoDE, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DecD, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
 		&Z80::JumpSignedImmediate, &Z80::AddDEToHL, &Z80::UnknownOp, &Z80::DecDE, &Z80::IncE, &Z80::DecE, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x1F
 		&Z80::JumpOffsetIfNZ, &Z80::LoadImmediate16IntoHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoH, &Z80::UnknownOp,		// 0x27
-		&Z80::UnknownOp, &Z80::AddHLToHL, &Z80::LoadHLIndirectIntoAIncHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::ComplementA,						// 0x2F
+		&Z80::JumpOffsetIfZ, &Z80::AddHLToHL, &Z80::LoadHLIndirectIntoAIncHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::ComplementA,						// 0x2F
 		&Z80::UnknownOp, &Z80::PushImmediate16, &Z80::LoadAIntoHLDecHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoHL, &Z80::UnknownOp,		// 0x37
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoA, &Z80::UnknownOp,			// 0x3F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x47
@@ -41,21 +41,21 @@ private:
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x6F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x77
 		&Z80::LoadBIntoA, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x7F
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x87
+		&Z80::AddBToA, &Z80::AddCToA, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x87
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x8F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x97
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x9F
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xA7
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::AndAWithA,						// 0xA7
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::XorWithA,						// 0xAF
 		&Z80::UnknownOp, &Z80::OrCWithA, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xB7
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xBF
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::JumpImmediate, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,					// 0xC7
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::JumpImmediate, &Z80::UnknownOp, &Z80::PushBCToStack, &Z80::UnknownOp, &Z80::UnknownOp,					// 0xC7
 		&Z80::UnknownOp, &Z80::Return, &Z80::UnknownOp, &Z80::CBLookup, &Z80::UnknownOp, &Z80::CallImmediate16, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xCF
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xD7
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::PushDEToStack, &Z80::UnknownOp, &Z80::UnknownOp,						// 0xD7
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0XDF
-		&Z80::StoreAToFFImmediate, &Z80::UnknownOp, &Z80::StoreAToFFPlusC, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,			// 0xE7
+		&Z80::StoreAToFFImmediate, &Z80::UnknownOp, &Z80::StoreAToFFPlusC, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::PushHLToStack, &Z80::UnknownOp, &Z80::UnknownOp,			// 0xE7
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::StoreAToImmediate16, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,			// 0xEF
-		&Z80::LoadFFImmediateIntoA, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DisableInterrupts, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,	// 0xF7
+		&Z80::LoadFFImmediateIntoA, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::DisableInterrupts, &Z80::UnknownOp, &Z80::PushAFToStack, &Z80::UnknownOp, &Z80::UnknownOp,	// 0xF7
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::CompareAWithImmediate, &Z80::UnknownOp			// 0xFF
 	};
 
@@ -99,6 +99,7 @@ private:
 	void NoOp();
 	void LoadImmediate16IntoBC();
 	void IncBC();
+	void IncB();
 	void DecB();
 	void LoadImmediateIntoB();
 	void LoadBCIndirectIntoA();
@@ -118,6 +119,7 @@ private:
 	void JumpOffsetIfNZ();
 	void LoadImmediate16IntoHL();
 	void LoadImmediateIntoH();
+	void JumpOffsetIfZ();
 	void AddHLToHL();
 	void LoadHLIndirectIntoAIncHL();
 	void ComplementA();
@@ -126,17 +128,24 @@ private:
 	void LoadImmediateIntoHL();
 	void LoadImmediateIntoA();
 	void LoadBIntoA();
+	void AddBToA();
+	void AddCToA();
+	void AndAWithA();
 	void XorWithA();
 	void OrCWithA();
 	void JumpImmediate();
+	void PushBCToStack();
 	void Return();
 	void CBLookup();
 	void CallImmediate16();
+	void PushDEToStack();
 	void StoreAToFFImmediate();
 	void StoreAToFFPlusC();
+	void PushHLToStack();
 	void StoreAToImmediate16();
 	void LoadFFImmediateIntoA();
 	void DisableInterrupts();
+	void PushAFToStack();
 	void CompareAWithImmediate();
 
 	void ShiftBLeftIntoCarry();
@@ -203,6 +212,10 @@ private:
 	void MemoryWriteByte(unsigned short dest, unsigned char data);
 	unsigned short MemoryReadWord(unsigned short loc);
 	void MemoryWriteWord(unsigned short dest, unsigned short data);
+
+	// Stack R/W
+	unsigned short StackPop();
+	void StackPush(unsigned short data);
 
 	// Program counter
 	unsigned short PC;

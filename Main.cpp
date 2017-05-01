@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	while (true)
 	{
 		z80.AdvanceCycle();
-		Sleep(10);
+		//Sleep(10);
 	}
 
 	return 0;

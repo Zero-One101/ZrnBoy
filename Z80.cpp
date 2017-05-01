@@ -151,6 +151,21 @@ void Z80::IncBC()
 	cycles -= 8;
 }
 
+/* Increments B
+   Zero flag set if B is 0
+   AddSub flag reset
+   Half-carry set if carry from bit 3 */
+void Z80::IncB()
+{
+	registers.B++;
+	registers.B == 0 ? SetZeroFlag() : ClearZeroFlag();
+	registers.B > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	ClearAddSubFlag();
+	PC++;
+	printf("0x%.2X: Incremented B (0x%.2X)\n", opcode, registers.B);
+	cycles -= 4;
+}
+
 /* Decrements register B
    If register B is 0, set zero flag
    Set AddSub Flag
@@ -380,6 +395,23 @@ void Z80::LoadImmediateIntoH()
 	cycles -= 8;
 }
 
+/* If Z is set, add the next signed 8-bit value to PC */
+void Z80::JumpOffsetIfZ()
+{
+	if (GetZeroFlag())
+	{
+		signed char offset = MemoryReadByte(PC + 1) + 1; // +1 here because I don't increment PC to get the next byte
+		PC += offset;
+		cycles -= 12;
+		printf("0x%.2X: Zero flag was set, jumped to 0x%.4X\n", opcode, PC);
+		return;
+	}
+
+	cycles -= 8;
+	PC++;
+	printf("0x%.2X: Zero flag was not set, did not jump\n", opcode);
+}
+
 /* Adds HL to itself
    AddSub flag reset
    Half-carry set if carry from bit 11
@@ -424,9 +456,8 @@ void Z80::ComplementA()
 /* Pushes the next 16-bit value onto the stack */
 void Z80::PushImmediate16()
 {
-	SP -= 2;
 	unsigned short data = MemoryReadWord(PC + 1);
-	MemoryWriteWord(SP, data);
+	StackPush(data);
 	printf("0x%.2X: Pushed 0x%.2X onto stack\n", opcode, data);
 	PC += 3;
 	cycles -= 12;
@@ -472,6 +503,57 @@ void Z80::LoadBIntoA()
 	cycles -= 4;
 }
 
+/* Adds B to A 
+   Zero flag set if A is 0 
+   AddSub flag reset
+   Half-carry flag set if carry
+   Carry flag set if carry */
+void Z80::AddBToA()
+{
+	int result = registers.A + registers.B;
+	registers.A += registers.B;
+	registers.A == 0 ? SetZeroFlag() : ClearZeroFlag();
+	registers.A > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	result > 0xFF ? SetCarryFlag() : ClearCarryFlag();
+	printf("0x%.2X: Added B (0x%.2X) to A (result: 0x%.2X)\n", opcode, registers.B, registers.A);
+	PC++;
+	cycles -= 4;
+}
+
+/* Adds C to A
+   Zero flag set if A is 0
+   AddSub flag reset
+   Half-carry flag set if carry
+   Carry flag set if carry */
+void Z80::AddCToA()
+{
+	int result = registers.A + registers.C;
+	registers.A += registers.C;
+	registers.A == 0 ? SetZeroFlag() : ClearZeroFlag();
+	registers.A > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+	result > 0xFF ? SetCarryFlag() : ClearCarryFlag();
+	printf("0x%.2X: Added C (0x%.2X) to A (result: 0x%.2X)\n", opcode, registers.C, registers.A);
+	PC++;
+	cycles -= 4;
+}
+
+/* Ands A with A
+   Zero flag set if A is 0
+   AddSub flag cleared
+   Half-carry set
+   Carry cleared */
+void Z80::AndAWithA()
+{
+	registers.A &= registers.A;
+	registers.A == 0 ? SetZeroFlag() : ClearZeroFlag();
+	ClearAddSubFlag();
+	SetHalfCarryFlag();
+	ClearCarryFlag();
+	cycles -= 4;
+	PC++;
+	printf("0x%.2X: AND'd A with A (0x%.2X)\n", opcode, registers.A);
+}
+
 /* Xors A with A. Sets zero flag, clears all others */
 void Z80::XorWithA()
 {
@@ -509,6 +591,15 @@ void Z80::JumpImmediate()
 	cycles -= 16;
 }
 
+/* Pushes BC to the stack */
+void Z80::PushBCToStack()
+{
+	StackPush(GetBC());
+	cycles -= 16;
+	PC++;
+	printf("0x%.2X: Pushed BC to stack\n", opcode);
+}
+
 /* Pops two bytes from the stack and jumps to that address */
 void Z80::Return()
 {
@@ -530,11 +621,18 @@ void Z80::CBLookup()
 /* Pushes address of next instruction to the stack, then jumps to the next 16-bit value */
 void Z80::CallImmediate16()
 {
-	SP -= 2;
-	MemoryWriteWord(SP, PC + 3);
+	StackPush(PC + 3);
 	PC = MemoryReadWord(PC + 1);
 	printf("0x%.2X: Called method at 0x%.4X\n", opcode, PC);
 	cycles -= 24;
+}
+
+void Z80::PushDEToStack()
+{
+	StackPush(GetDE());
+	cycles -= 16;
+	PC++;
+	printf("0x%.2X: Pushed DE to stack\n", opcode);
 }
 
 /* Stores register A to 0xFF00 plus the next 8-bit value */
@@ -555,6 +653,15 @@ void Z80::StoreAToFFPlusC()
 	PC++;
 	printf("0x%.2X: Wrote A (0x%.2X) to 0x%.2X\n", opcode, registers.A, loc);
 	cycles -= 8;
+}
+
+/* Pushes HL to the stack */
+void Z80::PushHLToStack()
+{
+	StackPush(GetHL());
+	cycles -= 16;
+	PC++;
+	printf("0x%.2X: Pushed HL to stack\n", opcode);
 }
 
 /* Stores register A to memory at the next 16-bit value */
@@ -585,6 +692,16 @@ void Z80::DisableInterrupts()
 	PC++;
 	printf("0x%.2X: Interrupts disabled after next instruction\n", opcode);
 	cycles -= 4;
+}
+
+/* Pushes AF to the stack */
+void Z80::PushAFToStack()
+{
+	StackPush(GetAF());
+	MemoryWriteWord(SP, GetAF());
+	cycles -= 16;
+	PC++;
+	printf("0x%2.X: Pushed AF to stack\n", opcode);
 }
 
 /* Compares the value in register A with the next 8-bit value
@@ -797,6 +914,19 @@ void Z80::MemoryWriteWord(unsigned short dest, unsigned short data)
 		return;
 	}
 	memory[dest] = data;
+}
+
+unsigned short Z80::StackPop()
+{
+	unsigned short data = memory[SP];
+	SP += 2;
+	return data;
+}
+
+void Z80::StackPush(unsigned short data)
+{
+	SP -= 2;
+	memory[SP] = data;
 }
 
 Z80::~Z80()
