@@ -167,7 +167,7 @@ void Z80::LoadImmediate16IntoBC()
 	printf("0x%.2X: Set BC to 0x%.4X\n", opcode, GetBC());
 }
 
-/* Handles register incrementing */
+/* Handles register incrementing with relevant flag setting */
 void Z80::Inc()
 {
     if ((opcode & 0x0F) == 0x3)
@@ -188,6 +188,10 @@ void Z80::Inc()
             case 0x23:
                 SetHL(GetHL() + 1);
                 regName = "HL";
+                break;
+            case 0x33:
+                SP--;
+                regName = "Stack";
                 break;
         }
 
@@ -232,12 +236,6 @@ void Z80::Inc()
                 break;
         }
 
-        if (reg == nullptr)
-        {
-            printf("0x%.2X: Encountered null pointer\n", opcode);
-            return;
-        }
-
         uint8_t result = *reg + 1;
         IsHalfCarry(*reg, 1, result) ? SetHalfCarryFlag() : ClearHalfCarryFlag();
         ++*reg;
@@ -261,18 +259,96 @@ void Z80::Inc()
     }
 }
 
-/* Decrements register B
-   If register B is 0, set zero flag
-   Set AddSub Flag
-   Set Half-carry if no borrow from bit 4*/
-void Z80::DecB()
+/* Handles register decrementing with relevant flag setting */
+void Z80::Dec()
 {
-	registers.B--;
-	registers.B == 0 ? SetZeroFlag() : ClearZeroFlag();
-	SetAddSubFlag();
-	registers.B < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Decremented B (0x%.2X)\n", opcode, registers.B);
+    if ((opcode & 0x0F) == 0x0B)
+    {
+        // 16-bit registers
+        std::string regName;
+
+        switch (opcode)
+        {
+            case 0x0B:
+                SetBC(GetBC() - 1);
+                regName = "BC";
+                break;
+            case 0x1B:
+                SetDE(GetDE() - 1);
+                regName = "DE";
+                break;
+            case 0x2B: // Can't see this number very well. I think I'm Nier-sighted
+                SetHL(GetHL() - 1);
+                regName = "HL";
+                break;
+            case 0x3B:
+                SP--;
+                regName = "Stack";
+                break;
+        }
+
+        PC++;
+        printf("0x%.2X: Decremented %s\n", opcode, regName.c_str());
+    }
+    else if (opcode != 0x35)
+    {
+        // 8-bit registers
+        char regName;
+        unsigned char *reg = nullptr;
+
+        switch (opcode)
+        {
+            case 0x05:
+                reg = &registers.B;
+                regName = 'B';
+                break;
+            case 0x0D:
+                reg = &registers.C;
+                regName = 'C';
+                break;
+            case 0x15:
+                reg = &registers.D;
+                regName = 'D';
+                break;
+            case 0x1D:
+                reg = &registers.E;
+                regName = 'E';
+                break;
+            case 0x25:
+                reg = &registers.H;
+                regName = 'H';
+                break;
+            case 0x2D:
+                reg = &registers.L;
+                regName = 'L';
+                break;
+            case 0x3D:
+                reg = &registers.A;
+                regName = 'A';
+                break;
+        }
+
+        uint8_t result = *reg - 1;
+        IsHalfCarry(*reg, -1, result) ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+        --*reg;
+        *reg == 0 ? SetZeroFlag() : ClearZeroFlag();
+        SetAddSubFlag();
+        PC++;
+        printf("0x%.2X: Decremented %c (0x%.2X)\n", opcode, regName, *reg);
+    }
+    else
+    {
+        // (HL)
+        unsigned char data = MemoryReadByte(GetHL());
+        uint8_t result = data - 1;
+        IsHalfCarry(data, -1, result) ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+        data--;
+        data == 0 ? SetZeroFlag() : ClearZeroFlag();
+        SetAddSubFlag();
+        PC++;
+        MemoryWriteByte(GetHL(), data);
+        printf("0x%.2X: Decremented memory at address 0x%.4X (0x%.2X)\n", opcode, GetHL(), data);
+    }
 }
 
 /* Stores the next 8-bit value into B */
@@ -290,28 +366,6 @@ void Z80::LoadBCIndirectIntoA()
 	registers.A = MemoryReadByte(GetBC());
 	PC++;
 	printf("0x%.2X: Stored data at 0x%.4X into A (0x%.2X)\n", opcode, GetBC(), registers.A);
-}
-
-/* Decrements register BC*/
-void Z80::DecBC()
-{
-	SetBC(GetBC() - 1);
-	PC++;
-	printf("0x%.2X: Decremented BC (0x%.4X)\n", opcode, GetBC());
-}
-
-/* Decrements register C
-   If register C is 0, set zero flag
-   Set AddSub Flag
-   Set Half-carry if no borrow from bit 4*/
-void Z80::DecC()
-{
-	registers.C--;
-	registers.C == 0 ? SetCarryFlag() : ClearCarryFlag();
-	SetAddSubFlag();
-	registers.C < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Decremented C (0x%.2X)\n", opcode, registers.C);
 }
 
 /* Stores the next 8-bit value into C */
@@ -350,20 +404,6 @@ void Z80::LoadAIntoDE()
 	// LD (DE), A
 }
 
-/* Decrements D
-   Zero flag set if D is 0
-   AddSub flag set
-   Half-carry set if no borrow from bit 4 */
-void Z80::DecD()
-{
-	registers.D--;
-	registers.D == 0 ? SetZeroFlag() : ClearZeroFlag();
-	SetAddSubFlag();
-	registers.D < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Decremented D (0x%.2X)\n", opcode, registers.D);
-}
-
 /* Add the next signed 8-bit value to the PC */
 void Z80::JumpSignedImmediate()
 {
@@ -386,28 +426,6 @@ void Z80::AddDEToHL()
 	result > 0xFFFF ? SetCarryFlag() : ClearCarryFlag();
 	PC++;
 	printf("0x%.2X: Set HL to HL + DE (0x%.4X)\n", opcode, GetHL());
-}
-
-/* Decrements DE */
-void Z80::DecDE()
-{
-	SetDE(GetDE() - 1);
-	PC++;
-	printf("0x%.2X: Decremented DE (0x%.4X)\n", opcode, GetDE());
-}
-
-/* Decrements E 
-   Zero flag set or cleared
-   AddSub flag set
-   Half-carry set if no borrow from bit 4 */
-void Z80::DecE()
-{
-	registers.E--;
-	registers.E == 0 ? SetZeroFlag() : ClearZeroFlag();
-	SetAddSubFlag();
-	registers.E < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Decremented E (0x%.2X)\n", opcode, registers.E);
 }
 
 /* Rotates A to the right. Carry becomes bit 7, bit 0 stored in carry

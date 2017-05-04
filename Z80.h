@@ -27,14 +27,14 @@ private:
 	// Function pointer table
 	void(Z80::*OpcodeTable[256])() =
 	{
-		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::Inc, &Z80::Inc, &Z80::DecB, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
-		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::DecBC, &Z80::Inc, &Z80::DecC, &Z80::LoadImmediateIntoC, &Z80::UnknownOp,			// 0x0F
-		&Z80::Stop, &Z80::LoadImmediate16IntoDE, &Z80::LoadAIntoDE, &Z80::UnknownOp, &Z80::Inc, &Z80::DecD, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
-		&Z80::JumpSignedImmediate, &Z80::AddDEToHL, &Z80::UnknownOp, &Z80::DecDE, &Z80::Inc, &Z80::DecE, &Z80::UnknownOp, &Z80::RotateRightA,						// 0x1F
-		&Z80::JumpOffsetIfNZ, &Z80::LoadImmediate16IntoHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoH, &Z80::UnknownOp,		// 0x27
-		&Z80::JumpOffsetIfZ, &Z80::AddHLToHL, &Z80::LoadHLIndirectIntoAIncHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoL, &Z80::ComplementA,						// 0x2F
-		&Z80::UnknownOp, &Z80::PushImmediate16, &Z80::LoadAIntoHLDecHL, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoHL, &Z80::UnknownOp,		// 0x37
-		&Z80::JumpOffsetIfC, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadImmediateIntoA, &Z80::UnknownOp,			// 0x3F
+		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::Inc, &Z80::Inc, &Z80::Dec, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
+		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::Dec, &Z80::Inc, &Z80::Dec, &Z80::LoadImmediateIntoC, &Z80::UnknownOp,			// 0x0F
+		&Z80::Stop, &Z80::LoadImmediate16IntoDE, &Z80::LoadAIntoDE, &Z80::Inc, &Z80::Inc, &Z80::Dec, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
+		&Z80::JumpSignedImmediate, &Z80::AddDEToHL, &Z80::UnknownOp, &Z80::Dec, &Z80::Inc, &Z80::Dec, &Z80::UnknownOp, &Z80::RotateRightA,						// 0x1F
+		&Z80::JumpOffsetIfNZ, &Z80::LoadImmediate16IntoHL, &Z80::UnknownOp, &Z80::Inc, &Z80::Inc, &Z80::Dec, &Z80::LoadImmediateIntoH, &Z80::UnknownOp,		// 0x27
+		&Z80::JumpOffsetIfZ, &Z80::AddHLToHL, &Z80::LoadHLIndirectIntoAIncHL, &Z80::Dec, &Z80::Inc, &Z80::Dec, &Z80::LoadImmediateIntoL, &Z80::ComplementA,						// 0x2F
+		&Z80::UnknownOp, &Z80::PushImmediate16, &Z80::LoadAIntoHLDecHL, &Z80::Inc, &Z80::Inc, &Z80::Dec, &Z80::LoadImmediateIntoHL, &Z80::UnknownOp,		// 0x37
+		&Z80::JumpOffsetIfC, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::Dec, &Z80::Inc, &Z80::Dec, &Z80::LoadImmediateIntoA, &Z80::UnknownOp,			// 0x3F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x47
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x4F
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x57
@@ -126,21 +126,16 @@ private:
 	void NoOp();						// 0x00
 	void LoadImmediate16IntoBC();		// 0x01
     void Inc();                         // 0x03, 04, 0C, 13, 14, 1C, 23, 24, 2C, 33, 34, 3C
-	void DecB();						// 0x05
+    void Dec();                         // 0x05, 0B, 0D, 15, 1B, 1D, 25, 2B, 2D, 35, 3B, 3D
 	void LoadImmediateIntoB();			// 0x06
 	void LoadBCIndirectIntoA();			// 0x0A
-	void DecBC();						// 0x0B
-	void DecC();						// 0x0D
 	void LoadImmediateIntoC();			// 0x0E
 
 	void Stop();						// 0x10
 	void LoadImmediate16IntoDE();		// 0x11
 	void LoadAIntoDE();					// 0x12
-	void DecD();						// 0x15
 	void JumpSignedImmediate();			// 0x18
 	void AddDEToHL();					// 0x19
-	void DecDE();						// 0x1B
-	void DecE();						// 0x1D
 	void RotateRightA();				// 0x1F
 
 	void JumpOffsetIfNZ();				// 0x20
