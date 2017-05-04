@@ -119,6 +119,7 @@ private:
 
     const int CB6ECycles = 16; // Used if the CB opcode & F == 6 or E
     const int CBCycles = 8; // Every other CB opcode
+    bool isCbOp = false;
 
 	void NoOp();						// 0x00
 	void LoadImmediate16IntoBC();		// 0x01
