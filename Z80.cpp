@@ -261,14 +261,6 @@ void Z80::Inc()
     }
 }
 
-/* Increments BC */
-void Z80::IncBC()
-{
-	SetBC(GetBC() + 1);
-	PC++;
-	printf("0x%.2X: Incremented BC (0x%.4X)\n", opcode, GetBC());
-}
-
 /* Decrements register B
    If register B is 0, set zero flag
    Set AddSub Flag

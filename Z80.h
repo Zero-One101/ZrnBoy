@@ -27,7 +27,7 @@ private:
 	// Function pointer table
 	void(Z80::*OpcodeTable[256])() =
 	{
-		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::IncBC, &Z80::Inc, &Z80::DecB, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
+		&Z80::NoOp, &Z80::LoadImmediate16IntoBC, &Z80::UnknownOp, &Z80::Inc, &Z80::Inc, &Z80::DecB, &Z80::LoadImmediateIntoB, &Z80::UnknownOp,				// 0x07
 		&Z80::UnknownOp, &Z80::UnknownOp, &Z80::LoadBCIndirectIntoA, &Z80::DecBC, &Z80::Inc, &Z80::DecC, &Z80::LoadImmediateIntoC, &Z80::UnknownOp,			// 0x0F
 		&Z80::Stop, &Z80::LoadImmediate16IntoDE, &Z80::LoadAIntoDE, &Z80::UnknownOp, &Z80::Inc, &Z80::DecD, &Z80::UnknownOp, &Z80::UnknownOp,						// 0x17
 		&Z80::JumpSignedImmediate, &Z80::AddDEToHL, &Z80::UnknownOp, &Z80::DecDE, &Z80::Inc, &Z80::DecE, &Z80::UnknownOp, &Z80::RotateRightA,						// 0x1F
@@ -126,7 +126,6 @@ private:
 	void NoOp();						// 0x00
 	void LoadImmediate16IntoBC();		// 0x01
     void Inc();                         // 0x03, 04, 0C, 13, 14, 1C, 23, 24, 2C, 33, 34, 3C
-	void IncBC();						// 0x03
 	void DecB();						// 0x05
 	void LoadImmediateIntoB();			// 0x06
 	void LoadBCIndirectIntoA();			// 0x0A
