@@ -167,26 +167,106 @@ void Z80::LoadImmediate16IntoBC()
 	printf("0x%.2X: Set BC to 0x%.4X\n", opcode, GetBC());
 }
 
+/* Handles register incrementing */
+void Z80::Inc()
+{
+    if ((opcode & 0x0F) == 0x3)
+    {
+        // 16-bit registers
+        std::string regName;
+
+        switch (opcode)
+        {
+            case 0x03:
+                SetBC(GetBC() + 1);
+                regName = "BC";
+                break;
+            case 0x13:
+                SetDE(GetDE() + 1);
+                regName = "DE";
+                break;
+            case 0x23:
+                SetHL(GetHL() + 1);
+                regName = "HL";
+                break;
+        }
+
+        PC++;
+        printf("0x%.2X: Incremented %s\n", opcode, regName.c_str());
+    }
+    else if (opcode != 0x34)
+    {
+        // 8-bit registers
+        unsigned char *reg = NULL;
+        char regName;
+
+        switch (opcode)
+        {
+            case 0x04:
+                reg = &registers.B;
+                regName = 'B';
+                break;
+            case 0x0C:
+                reg = &registers.C;
+                regName = 'C';
+                break;
+            case 0x14:
+                reg = &registers.D;
+                regName = 'D';
+                break;
+            case 0x1C:
+                reg = &registers.E;
+                regName = 'E';
+                break;
+            case 0x24:
+                reg = &registers.H;
+                regName = 'H';
+                break;
+            case 0x2C:
+                reg = &registers.L;
+                regName = 'L';
+                break;
+            case 0x3C:
+                reg = &registers.A;
+                regName = 'A';
+                break;
+        }
+
+        if (reg == nullptr)
+        {
+            printf("0x%.2X: Encountered null pointer\n", opcode);
+            return;
+        }
+
+        uint8_t result = *reg + 1;
+        IsHalfCarry(*reg, 1, result) ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+        ++*reg;
+        *reg == 0 ? SetZeroFlag() : ClearZeroFlag();
+        ClearAddSubFlag();
+        PC++;
+        printf("0x%.2X: Incremented %c (0x%.2X)\n", opcode, regName, *reg);
+    }
+    else
+    {
+        // (HL)
+        unsigned char data = MemoryReadByte(GetHL());
+        uint8_t result = data + 1;
+        IsHalfCarry(data, 1, result) ? SetHalfCarryFlag() : ClearHalfCarryFlag();
+        data++;
+        data == 0 ? SetZeroFlag() : ClearZeroFlag();
+        ClearAddSubFlag();
+        PC++;
+        MemoryWriteByte(GetHL(), data);
+        printf("0x%.2X: Incremented memory at address 0x%.4X (0x%.2X)\n", opcode, GetHL(), data);
+    }
+}
+
 /* Increments BC */
 void Z80::IncBC()
 {
 	SetBC(GetBC() + 1);
 	PC++;
 	printf("0x%.2X: Incremented BC (0x%.4X)\n", opcode, GetBC());
-}
-
-/* Increments B
-   Zero flag set if B is 0
-   AddSub flag reset
-   Half-carry set if carry from bit 3 */
-void Z80::IncB()
-{
-	registers.B++;
-	registers.B == 0 ? SetZeroFlag() : ClearZeroFlag();
-	registers.B > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	ClearAddSubFlag();
-	PC++;
-	printf("0x%.2X: Incremented B (0x%.2X)\n", opcode, registers.B);
 }
 
 /* Decrements register B
@@ -226,20 +306,6 @@ void Z80::DecBC()
 	SetBC(GetBC() - 1);
 	PC++;
 	printf("0x%.2X: Decremented BC (0x%.4X)\n", opcode, GetBC());
-}
-
-/* Increments register C
-   If C is 0, set zero flag
-   Reset AddSubFlag
-   Set Half-carry if carry from bit 3 */
-void Z80::IncC()
-{
-	registers.C++;
-	registers.C == 0 ? SetCarryFlag() : ClearCarryFlag();
-	ClearAddSubFlag();
-	registers.C > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Incremented C (0x%.2X)\n", opcode, registers.C);
 }
 
 /* Decrements register C
@@ -292,20 +358,6 @@ void Z80::LoadAIntoDE()
 	// LD (DE), A
 }
 
-/* Increments D
-   Zero flag set if D is 0
-   AddSub flag reset
-   Half-carry if carry from bit 3 */
-void Z80::IncD()
-{
-	registers.D++;
-	ClearAddSubFlag();
-	registers.D == 0 ? SetZeroFlag() : ClearZeroFlag();
-	registers.D > 15 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Incremented D (0x%.2X)\n", opcode, registers.D);
-}
-
 /* Decrements D
    Zero flag set if D is 0
    AddSub flag set
@@ -350,20 +402,6 @@ void Z80::DecDE()
 	SetDE(GetDE() - 1);
 	PC++;
 	printf("0x%.2X: Decremented DE (0x%.4X)\n", opcode, GetDE());
-}
-
-/* Increments E
-   Zero flag set or cleared
-   AddSub flag set
-   Half-carry set if no borrow from bit 4 */
-void Z80::IncE()
-{
-	registers.E++;
-	registers.E == 0 ? SetZeroFlag() : ClearZeroFlag();
-	ClearAddSubFlag();
-	registers.E < 16 ? SetHalfCarryFlag() : ClearHalfCarryFlag();
-	PC++;
-	printf("0x%.2X: Incremented E (0x%.2X)\n", opcode, registers.E);
 }
 
 /* Decrements E 
