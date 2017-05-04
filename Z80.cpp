@@ -142,6 +142,16 @@ void Z80::DecodeOpcode()
     }
 }
 
+bool Z80::IsHalfCarry(unsigned char a, unsigned char b, uint8_t result)
+{
+    return ((a ^ b ^ result) & 0x10) == 0x10;
+}
+
+bool Z80::IsHalfCarry(unsigned short a, unsigned short b, uint16_t result)
+{
+    return ((a ^ b ^ result) & 0x1000) == 0x1000;
+}
+
 /* Performs no operation */
 void Z80::NoOp()
 {

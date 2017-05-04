@@ -21,6 +21,8 @@ private:
 	void DecodeOpcode();
 	void UnknownOp();
 	void UnknownCB();
+    bool IsHalfCarry(unsigned char a, unsigned char b, uint8_t result);
+    bool IsHalfCarry(unsigned short a, unsigned short b, uint16_t result);
 
 	// Function pointer table
 	void(Z80::*OpcodeTable[256])() =
